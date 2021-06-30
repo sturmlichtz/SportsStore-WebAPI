@@ -29,12 +29,27 @@ namespace SSWebAPIApp
       });
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
     {
       if (env.IsDevelopment())
       {
         app.UseDeveloperExceptionPage();
       }
+
+
+      using (var scope = app.ApplicationServices.CreateScope())
+      {
+        SportsStoreDbContext context = scope.ServiceProvider.GetRequiredService<SportsStoreDbContext>();
+        var createDatabase = context.Database.EnsureCreated();
+        if (createDatabase)
+        {
+          SportsStoreSeedData.PopulateSportsStore(context);
+          logger.LogInformation($"***SportsStoreSeedData Called, '{context.Products.Count()}' - Products Added" +
+            $"\n'{context.Orders.Count()}' - Orders Added" +
+            $"\n'{context.OrderDetails.Count()}' - OrderDetails Added***");
+        }
+      }
+
 
       app.UseRouting();
 
