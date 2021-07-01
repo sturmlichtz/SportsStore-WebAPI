@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SSWebAPIApp.Models;
+using SSWebAPIApp.Models.Abstract;
+using SSWebAPIApp.Models.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +23,18 @@ namespace SSWebAPIApp
 
     public void ConfigureServices(IServiceCollection services)
     {
+      services.AddMvc();
+
       services.AddDbContext<SportsStoreDbContext>(cfg => {
         cfg.UseSqlServer(Configuration["ConnectionStrings:SportsStoreConnection"], sqlServerOptionsAction: sqlOptions => {
           sqlOptions.EnableRetryOnFailure(maxRetryCount: 10, maxRetryDelay: TimeSpan.FromSeconds(20), errorNumbersToAdd: null);
         });
         cfg.UseLoggerFactory(LoggerFactory.Create(cfg => { cfg.AddConsole(); })).EnableSensitiveDataLogging();
       });
+
+      services.AddScoped<IProductRepository, EFProductRepository>();
+      services.AddScoped<IOrderRepository, EFOrderRepository>();
+      services.AddScoped<IOrderDetailRepository, EFOrderDetailRepository>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
@@ -34,8 +42,8 @@ namespace SSWebAPIApp
       if (env.IsDevelopment())
       {
         app.UseDeveloperExceptionPage();
+        app.UseStatusCodePages();
       }
-
 
       using (var scope = app.ApplicationServices.CreateScope())
       {
@@ -50,11 +58,11 @@ namespace SSWebAPIApp
         }
       }
 
-
       app.UseRouting();
 
       app.UseEndpoints(endpoints =>
       {
+        endpoints.MapControllers();
         endpoints.MapGet("/", async context =>
               {
             await context.Response.WriteAsync("Hello World!");

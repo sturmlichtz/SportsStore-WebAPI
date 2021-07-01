@@ -17,8 +17,12 @@ namespace SSWebAPIApp.Models.Concrete
     public async Task<bool> RemoveOrderAsync(long orderId)
     {
       var order = await GetOrderByIdAsync(orderId);
-      _context.Orders.Remove(order);
-      return await _context.SaveChangesAsync() > 0;
+      if (order != null)
+      {
+        _context.Orders.Remove(order);
+        return await _context.SaveChangesAsync() > 0;
+      }
+      return false;
     }
 
     public async Task<Order> SaveOrderAsync(Order order)

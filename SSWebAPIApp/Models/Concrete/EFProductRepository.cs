@@ -34,12 +34,15 @@ namespace SSWebAPIApp.Models.Concrete
     public async Task<bool> DeleteProductAsync(long productId)
     {
       var product = await GetProductByIdAsync(productId);
-      _context.Products.Remove(product);
-      int recEffect = await _context.SaveChangesAsync();
-      if (recEffect == 1)
+      if (product != null)
       {
-        _logger.LogInformation($"***EFProductRepository.DeleteProductAsync, Product with - Id: {product.ProductId}, ProductName: {product.ProductName}, Deleted Successfully***");
-        return true;
+        _context.Products.Remove(product);
+        int recEffect = await _context.SaveChangesAsync();
+        if (recEffect == 1)
+        {
+          _logger.LogInformation($"***EFProductRepository.DeleteProductAsync, Product with - Id: {product.ProductId}, ProductName: {product.ProductName}, Deleted Successfully***");
+          return true;
+        }
       }
       return false;
     }
@@ -49,7 +52,7 @@ namespace SSWebAPIApp.Models.Concrete
     public async Task<IEnumerable<Product>> GetProductsAsync() => await _context.Products.ToListAsync();
 
     public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category) => await
-      _context.Products.Where(p=>p.Category == category).ToListAsync();
+      _context.Products.Where(p => p.Category == category).ToListAsync();
 
     public async Task<Product> UpdateProductAsync(Product product)
     {

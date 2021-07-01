@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SSWebAPIApp.Models.Concrete
 {
-  public class EFOrderDetailRepository: IOrderDetailRepository
+  public class EFOrderDetailRepository : IOrderDetailRepository
   {
     private readonly SportsStoreDbContext _context;
 
@@ -30,8 +30,12 @@ namespace SSWebAPIApp.Models.Concrete
     public async Task<bool> RemoveOrderDetailAsync(long orderId)
     {
       var orderDetail = await GetOrderDetailAsync(orderId);
-      _context.OrderDetails.RemoveRange(orderDetail);
-      return await _context.SaveChangesAsync() > 0;
+      if (orderDetail != null)
+      {
+        _context.OrderDetails.RemoveRange(orderDetail);
+        return await _context.SaveChangesAsync() > 0;
+      }
+      return false;
     }
 
     public async Task<OrderDetail> UpdateOrderDetailAsync(OrderDetail orderDetail)
