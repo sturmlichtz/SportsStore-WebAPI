@@ -44,3 +44,4 @@
 - 06CreateRepository
 - 07API
 - 08Swagger
+- 09CORSAndSPA
