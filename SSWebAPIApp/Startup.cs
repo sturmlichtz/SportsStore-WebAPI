@@ -40,6 +40,10 @@ namespace SSWebAPIApp
         cfg.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "SportsStore", Version = "v1" });
       });
 
+      // for setting a SPA (Angular/Vue/React)
+      // dotnet add package Microsoft.AspNetCore.SpaServices.Extensions--version 5.0.7
+      // services.AddSpaStaticFiles(cfg => { cfg.RootPath = "ClientApp/dist"; });
+
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
@@ -67,6 +71,18 @@ namespace SSWebAPIApp
             $"\n'{context.OrderDetails.Count()}' - OrderDetails Added***");
         }
       }
+
+      // Setup CORS (Cross Origin Resource Sharing)
+      // https://localhost:44375/api/product (enable cors)
+      // (another site which requires data from api/product) https://localhost:44378/ access this api/product
+      //app.UseCors(cfg => {
+      //  cfg.WithOrigins("https://localhost:44378/")
+      //    .AllowAnyHeader()
+      //    .AllowAnyOrigin()
+      //    .AllowAnyMethod();
+      //});
+
+
 
       app.UseRouting();
 
