@@ -35,6 +35,11 @@ namespace SSWebAPIApp
       services.AddScoped<IProductRepository, EFProductRepository>();
       services.AddScoped<IOrderRepository, EFOrderRepository>();
       services.AddScoped<IOrderDetailRepository, EFOrderDetailRepository>();
+
+      services.AddSwaggerGen(cfg => {
+        cfg.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "SportsStore", Version = "v1" });
+      });
+
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
@@ -44,6 +49,11 @@ namespace SSWebAPIApp
         app.UseDeveloperExceptionPage();
         app.UseStatusCodePages();
       }
+
+      app.UseSwagger();
+      app.UseSwaggerUI(cfg => {
+        cfg.SwaggerEndpoint("/swagger/v1/swagger.json", "SportsStore v1");
+      });
 
       using (var scope = app.ApplicationServices.CreateScope())
       {
@@ -65,7 +75,10 @@ namespace SSWebAPIApp
         endpoints.MapControllers();
         endpoints.MapGet("/", async context =>
               {
-            await context.Response.WriteAsync("Hello World!");
+            await context.Response.WriteAsync($"<div style='background-color: Cornflowerblue; text-align: center; color: white;'>" +
+              $"<h1>Sports Store Web API Links</h1>" +
+              $"<a href='/swagger/Index.html'>Swagger</a>" +
+              $"</div>");
           });
       });
     }
