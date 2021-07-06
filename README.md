@@ -45,3 +45,6 @@
 - 07API
 - 08Swagger
 - 09CORSAndSPA
+- 10ConfigureSecurity
+- 11AccountController
+- 12JQuery
