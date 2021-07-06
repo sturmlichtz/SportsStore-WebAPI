@@ -18,6 +18,10 @@
 - dotnet add SSWebAPIApp package Microsoft.EntityFrameworkCore.SqlServer --version 5.0.7
 - dotnet add SSWebAPIApp package Microsoft.EntityFrameworkCore.Design --version 5.0.7
 
+- **Packages for Identity Package**
+  - dotnet add SSWebAPIApp package Microsoft.Extensions.Identity.Core --version 5.0.7 (will contain the Identity Features)
+  - dotnet add SSWebAPIApp package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 5.0.7 (will contain features to store data in database using EntityFrameworkCore)
+
 - How to list packages installed in the project
   - dotnet list <projectname> package
 
@@ -33,6 +37,8 @@
 - dotnet ef migrations remove --context <context class name>
 - dotnet ef database update (will create the database and the table/s, reading from the Models/Migrations/SSMigrations)
 - dotnet ef database drop (will drop the database)
+- **Migrations for Identity**
+  - dotnet ef migrations add InitialIdentityDb --context IdentityDbContext --output-dir Models/Migrations/SSIdentityMigrations  
 
 #### Git Branches
 

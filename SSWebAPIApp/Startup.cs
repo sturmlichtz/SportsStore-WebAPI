@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using SSWebAPIApp.Models;
 using SSWebAPIApp.Models.Abstract;
 using SSWebAPIApp.Models.Concrete;
+using SSWebAPIApp.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,18 +28,63 @@ namespace SSWebAPIApp
     {
       services.AddMvc();
 
-      services.AddDbContext<SportsStoreDbContext>(cfg => {
-        cfg.UseSqlServer(Configuration["ConnectionStrings:SportsStoreConnection"], sqlServerOptionsAction: sqlOptions => {
+      services.AddDbContext<SportsStoreDbContext>(cfg =>
+      {
+        cfg.UseSqlServer(Configuration["ConnectionStrings:SportsStoreConnection"], sqlServerOptionsAction: sqlOptions =>
+        {
           sqlOptions.EnableRetryOnFailure(maxRetryCount: 10, maxRetryDelay: TimeSpan.FromSeconds(20), errorNumbersToAdd: null);
+        });
+        //cfg.UseLoggerFactory(LoggerFactory.Create(cfg => { cfg.AddConsole(); })).EnableSensitiveDataLogging();
+      });
+
+      #region Without SSUser
+      services.AddDbContext<IdentityDbContext>(cfg =>
+      {
+        cfg.UseSqlServer(Configuration["ConnectionStrings:SportsStoreIdentityConnection"], sqlServerOptionsAction: sqlOptions =>
+        {
+          sqlOptions.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null);
+          sqlOptions.MigrationsAssembly("SSWebAPIApp");
         });
         cfg.UseLoggerFactory(LoggerFactory.Create(cfg => { cfg.AddConsole(); })).EnableSensitiveDataLogging();
       });
+
+      services.AddIdentity<IdentityUser, IdentityRole>(cfg =>
+      {
+        cfg.Password.RequiredLength = 8;
+        cfg.Password.RequireLowercase = false;
+        cfg.SignIn.RequireConfirmedEmail = false;
+        cfg.User.RequireUniqueEmail = true;
+      })
+        .AddEntityFrameworkStores<IdentityDbContext>();
+      #endregion
+
+      #region With SSUser
+      //services.AddDbContext<IdentityDbContext<SSUser>>(cfg =>
+      //{
+      //  cfg.UseSqlServer(Configuration["ConnectionStrings:SportsStoreIdentityConnection"], sqlServerOptionsAction: sqlOptions =>
+      //  {
+      //    sqlOptions.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null);
+      //    //sqlOptions.MigrationsAssembly("SSWebAPIApp");
+      //  });
+      //  cfg.UseLoggerFactory(LoggerFactory.Create(cfg => { cfg.AddConsole(); })).EnableSensitiveDataLogging();
+      //});
+
+      //services.AddIdentity<SSUser, IdentityRole>(cfg =>
+      //{
+      //  cfg.Password.RequiredLength = 8;
+      //  cfg.Password.RequireLowercase = false;
+      //  cfg.SignIn.RequireConfirmedEmail = false;
+      //  cfg.User.RequireUniqueEmail = true;
+      //})
+      //  .AddEntityFrameworkStores<IdentityDbContext<SSUser>>();
+      #endregion
 
       services.AddScoped<IProductRepository, EFProductRepository>();
       services.AddScoped<IOrderRepository, EFOrderRepository>();
       services.AddScoped<IOrderDetailRepository, EFOrderDetailRepository>();
 
-      services.AddSwaggerGen(cfg => {
+      services.AddSwaggerGen(cfg =>
+      {
         cfg.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "SportsStore", Version = "v1" });
       });
 
@@ -55,7 +103,8 @@ namespace SSWebAPIApp
       }
 
       app.UseSwagger();
-      app.UseSwaggerUI(cfg => {
+      app.UseSwaggerUI(cfg =>
+      {
         cfg.SwaggerEndpoint("/swagger/v1/swagger.json", "SportsStore v1");
       });
 
@@ -70,6 +119,17 @@ namespace SSWebAPIApp
             $"\n'{context.Orders.Count()}' - Orders Added" +
             $"\n'{context.OrderDetails.Count()}' - OrderDetails Added***");
         }
+
+        // Identity Database
+        IdentityDbContext identityDbContext = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        var identityCreateDatabase = identityDbContext.Database.EnsureCreated();
+        if (identityCreateDatabase)
+        {
+          UserManager<IdentityUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+          RoleManager<IdentityRole> roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+          SSIdentitySeedData.PopulateIdentity(identityDbContext, userManager, roleManager).Wait();
+          logger.LogInformation($"***SSIdentitySeedData Called, '{identityDbContext.Users.Count()}' - Users Added\n'{identityDbContext.Roles.Count()}' - Roles Added***");
+        }
       }
 
       // Setup CORS (Cross Origin Resource Sharing)
@@ -82,20 +142,21 @@ namespace SSWebAPIApp
       //    .AllowAnyMethod();
       //});
 
-
-
       app.UseRouting();
+
+      app.UseAuthentication();
+      app.UseAuthorization();
 
       app.UseEndpoints(endpoints =>
       {
         endpoints.MapControllers();
         endpoints.MapGet("/", async context =>
               {
-            await context.Response.WriteAsync($"<div style='background-color: Cornflowerblue; text-align: center; color: white;'>" +
-              $"<h1>Sports Store Web API Links</h1>" +
-              $"<a href='/swagger/Index.html'>Swagger</a>" +
-              $"</div>");
-          });
+                await context.Response.WriteAsync($"<div style='background-color: Cornflowerblue; text-align: center; color: white;'>" +
+                  $"<h1>Sports Store Web API Links</h1>" +
+                  $"<a href='/swagger/Index.html'>Swagger</a>" +
+                  $"</div>");
+              });
       });
     }
   }
