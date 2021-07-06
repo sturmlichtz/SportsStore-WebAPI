@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SSWebAPIApp.Models.Abstract;
@@ -11,7 +12,7 @@ namespace SSWebAPIApp.Controllers
   [ApiController]
   [Produces("application/json")]
   [Route("api/product")]
-  [Authorize]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "RAdmin")]
   public class ProductController: ControllerBase
   {
     private readonly IProductRepository _productRepository;

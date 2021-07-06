@@ -22,6 +22,9 @@
   - dotnet add SSWebAPIApp package Microsoft.Extensions.Identity.Core --version 5.0.7 (will contain the Identity Features)
   - dotnet add SSWebAPIApp package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 5.0.7 (will contain features to store data in database using EntityFrameworkCore)
 
+- **Package for JwtBearer**
+  - dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 5.0.7
+
 - How to list packages installed in the project
   - dotnet list <projectname> package
 

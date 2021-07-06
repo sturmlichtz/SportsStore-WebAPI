@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using SSWebAPIApp.Models;
 using SSWebAPIApp.Models.Abstract;
 using SSWebAPIApp.Models.Concrete;
@@ -15,6 +16,7 @@ using SSWebAPIApp.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SSWebAPIApp
@@ -26,6 +28,18 @@ namespace SSWebAPIApp
 
     public void ConfigureServices(IServiceCollection services)
     {
+
+      services.AddAuthentication()
+        .AddJwtBearer(cfg => {
+          cfg.TokenValidationParameters = new TokenValidationParameters
+          {
+            ValidIssuer = Configuration["Tokens:Issuer"],
+            ValidAudience = Configuration["Tokens:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:Key"]))
+          };
+        }); // AddJwtBearer
+
+
       services.AddMvc();
 
       services.AddDbContext<SportsStoreDbContext>(cfg =>
