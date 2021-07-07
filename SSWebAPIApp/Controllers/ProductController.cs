@@ -12,7 +12,7 @@ namespace SSWebAPIApp.Controllers
   [ApiController]
   [Produces("application/json")]
   [Route("api/product")]
-  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "RAdmin")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public class ProductController: ControllerBase
   {
     private readonly IProductRepository _productRepository;
