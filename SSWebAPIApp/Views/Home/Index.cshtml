@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>Home-Index</title>
+  <link href="/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="/lib/jquery/dist/jquery.min.js"></script>
+</head>
+<body>
+
+  <div class="m-2 border border-2 border-info">
+    <div class="row mt-2">
+      <div class="col-4">
+        <div class="input-group mb-2">
+          <span class="input-group-text">ProductId:</span>
+          <input type="text" id="productIdTextBox" />
+        </div>
+        <input class="btn btn-outline-secondary mb-2 w-50" type="button" id="GetProductNameButton" value="Get Product Name" /> <br />
+        <input class="btn btn-outline-secondary mb-2 w-50" type="button" id="GetProductsButton" value="Get Products" />
+      </div>
+
+      <div class="col-8">
+
+        <div class="input-group mb-2">
+          <span class="input-group-text w-25">ProductName:</span>
+          <input class="form-control" id="productNameTextBox" type="text" value="Dukes Ball" />
+        </div>
+
+        <div class="input-group mb-2">
+          <span class="input-group-text w-25">Description:</span>
+          <input class="form-control" id="descriptionTextBox" type="text" value="ICC Official English/Indian Cricket Ball" />
+        </div>
+
+        <div class="input-group mb-2">
+          <span class="input-group-text w-25">Category:</span>
+          <input class="form-control" id="categoryTextBox" type="text" value="Cricket" />
+        </div>
+
+
+        <div class="input-group mb-2">
+          <span class="input-group-text w-25">Price:</span>
+          <input class="form-control" id="priceTextBox" type="number" value="100" />
+        </div>
+
+
+        <div class="text-center">
+          <button class="btn btn-outline-primary" id="NewProductButton" type="submit">New Product</button>
+        </div>
+
+      </div>
+
+
+    </div>
+  </div>
+
+  <hr class="bg-danger border-3" />
+  <div id="ProductNameDiv"></div>
+  <div id="ProductsDiv"></div>
+  <div id="ErrorDiv"></div>
+  <div>
+    <ul id="ProductsUl"></ul>
+  </div>
+
+  <script>
+    /*$((document).ready(
+      function ()
+      { alert(`Hi this is a message from JavaScript using JQeury`); }
+    ))();*/
+
+    $(function () {
+
+      $("#GetProductsButton").click(function () {
+        // alert("Coming from GetProductsButton Click");
+        // console.log("Coming from GetProductsButton Click");
+        // $("#ProductsDiv").html("Coming from GetProductsButton Click");
+
+        $.ajax(
+          {
+            type: "GET",
+            contentType: "application/json",
+            url: "http://localhost:5000/api/product",
+            //url: "https://localhost:44375/api/product",
+            data: {},
+            success: function (result) {
+              // alert("Result\n" + result);// will returns object (Array of Object)
+              // alert("Result[0].productName\n" + result[0].productName);
+              const jsonResult = JSON.stringify(result);
+              // $("#ProductsDiv").html(jsonResult);
+              arrangeProductsUL(result);
+            },
+            error: function (errorResult) {
+              // alert("Error\n" + JSON.stringify(errorResult));
+              $("#ErrorDiv").html("Error\n" + JSON.stringify(errorResult));
+            }
+          }); // ajax
+      }); // GetProductsButton.Click
+
+      function arrangeProductsUL(products) {
+        $("#ProductsUl").empty();
+        let liValue = "";
+        for (var i = 0; i < products.length; i++) {
+          liValue += "<li>" + products[i].productId + " -- " + products[i].productName + " -- " + products[i].price + "</li>";
+        }
+        $("#ProductsUl").append(liValue);
+      }
+
+      $("#GetProductNameButton").click(function () {
+        $.ajax({
+          type: "GET",
+          contentType: "application/json",
+          data: {},
+          url: "http://localhost:5000/api/product/id/" + $("#productIdTextBox").val(),
+          //url: "https://localhost:44375/api/product/id/" + $("#productIdTextBox").val(),
+          success: function (result) {
+            const product = JSON.stringify(result);
+            //alert("ProductName:\n" + result.productName);
+            $("#ProductNameDiv").html(product);
+          },
+          error: function (errorResult) { $("#ErrorDiv").html("Error\n" + JSON.stringify(errorResult)); }
+        }); // ajax
+      }); // GetProductNameButton.Click
+      
+      $("#NewProductButton").click(function () {
+
+        const dataJson = {
+          productName: $("#productNameTextBox").val().trim(),
+          description: $("#descriptionTextBox").val().trim(),
+          category: $("#categoryTextBox").val().trim(),
+          price: $("#priceTextBox").val().trim()
+        };
+        // alert("dataJson\n" + dataJson.productName + "\nJsonData\n" + JSON.stringify(dataJson));
+
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbkBhLmNvbSIsImp0aSI6IjVmNDU1YmFkLWI3YWMtNDAxZi1iOWJiLWM1OTA4MWNhNTYzZSIsInVuaXF1ZV9uYW1lIjoiYWRtaW5AYS5jb20iLCJleHAiOjE2MjU2NTI4NzYsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTAwMCIsImF1ZCI6InVzZXJzIn0.2KhQEpH29mDXbsUfDjQ7iwdc6ziQuqQpSxZynEMAEbc";
+
+        $.ajax({
+          type: "POST",
+          contentType: "application/json; charset=utf-8",
+          headers: {"Authorization": 'Bearer ' + token},
+          data: JSON.stringify(dataJson),
+          url: "http://localhost:5000/api/product",
+          success: function (result) {
+            alert("Result\n" + result);
+            const jsonResult = JSON.stringify(result);
+            $("#ProductNameDiv").html(jsonResult);
+          },
+          error: function (errorResult) { $("#ErrorDiv").html(JSON.stringify(errorResult)); }
+        });// ajax
+
+
+        /*$.ajax({
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(dataJson),
+          url: "http://localhost:5000/api/product",
+          success: function (result) {
+            alert("Result\n" + result);
+            const jsonResult = JSON.stringify(result);
+            $("#ProductNameDiv").html(jsonResult);
+          },
+          error: function (errorResult) { $("#ErrorDiv").html(JSON.stringify(errorResult)); }
+        });// ajax*/
+
+
+
+      }); // NewProductButton.Click
+
+
+    });
+
+
+  </script>
+
+</body>
+</html>

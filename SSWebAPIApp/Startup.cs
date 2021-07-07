@@ -122,6 +122,8 @@ namespace SSWebAPIApp
         cfg.SwaggerEndpoint("/swagger/v1/swagger.json", "SportsStore v1");
       });
 
+      app.UseStaticFiles();
+
       using (var scope = app.ApplicationServices.CreateScope())
       {
         SportsStoreDbContext context = scope.ServiceProvider.GetRequiredService<SportsStoreDbContext>();

@@ -33,6 +33,8 @@
 - dotnet tool list --global (will give the list of global tools installed)
 - dotnet ef tool
   - dotnet tool install/uninstall --global dotnet-ef
+- libman
+  - 
 
 #### dotnet ef commands
 
